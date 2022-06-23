@@ -1,0 +1,51 @@
+#Raspberry Kiosk mode
+
+#Install Raspberry Imager
+#format sd card using gparter
+#unount & format to fat32
+#imager turn on ssh and set password
+#ssh to the device from remote machine
+
+Optional:
+sudo apt update
+sudo apt upgrade -y
+
+Install:
+ 
+sudo apt install xdotool unclutter -y
+
+sudo crontab -e
+
+0 4 * * * /sbin/shutdown -r now
+
+sudo nano /etc/xdg/lxsession/LXDE-pi/autostart
+
+@xset s off
+@xset -dpms
+@xset s noblank
+
+@unclutter -idle 0.5 -root
+
+@chromium-browser https://buskarta.ba/bus/sifarnici/polasci.php?pid=611 --window-size=1920,1080 --window-position=0,0 ---start-fullscreen  --kiosk  --incognito  --noerrdialogs --disable-translate --no-first-run --fast --fast-start --disable-infobars --disable-features=TranslateUI --disk-cache-dir=/dev/null --overscroll-history-navigation=0 --disable-pinch
+
+nano chrome-refresh.sh
+
+#!/bin/bash
+while true
+do
+xdotools key = ”ctrl+F5” &
+done
+
+sudo crontab -e
+
+*/10 * * * * /usr/local/mesh_services/meshagent/chrome-refresh.sh
+
+
+sudo raspi-config
+
+enable:
+network at boot; spash screen at boot; desktop at login and autologin
+
+
+
+
