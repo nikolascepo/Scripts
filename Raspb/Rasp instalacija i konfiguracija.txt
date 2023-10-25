@@ -17,8 +17,6 @@ Procedura:
 
 3. U raspi-conf : Enable console autologin, enable ssh, enable overscan (or disable underscan)
 
-user: datadesign / 34#Data*
-
 4. konfigurisati /etc/wpa_supplicant.conf
 
 ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
@@ -48,10 +46,6 @@ $ sudo apt-get install --no-install-recommends chromium-browser
 *skripta za display*
 https://pimylifeup.com/raspberry-pi-kiosk/
 
-###
-!!!!Kada se sa konzole pozove $sudo reboot gubi se chomium startup. Ukoliko mora reboot, onda se iz raspi-config radi!!!  (ponekad ¯\_(ツ)_/¯ )
-###
-
 7. Smanjenje velicine logova, koristeci "logrotate" za brisanje starih logova.
 
 Za rotaciju svih logova:
@@ -75,8 +69,7 @@ $ sudo nano /etc/logrotate.conf
 9. Done!
 
 
-
-ZA MESH CENTRAL KONFIGURACIJE:
+###MESH CENTRAL
 
 panel:
 https://stackoverflow.com/questions/17928992/debian-lxde-terminal-how-to-disable-it-disable-the-panel-bar
