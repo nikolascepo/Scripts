@@ -1,0 +1,19 @@
+#Created by @nikolascepo
+#jasper automated replication
+
+
+#!/bin/bash
+
+cd /path/jasperreports-server-cp-7.8.0/buildomatic
+
+./js-import.sh --keyalias replikacija --input-zip report-ex.zip 
+
+#Report of import
+
+if [ $? -eq 0 ]
+then
+    echo "[${timestamp}] Import Success." >> /path/jasperreports-server-cp-7.8.0/replica-report/import-report.txt
+else
+    echo "[${timestamp}] Import Failure." >> /path/jasperreports-server-cp-7.8.0/replica-report/import-report.txt
+fi
+

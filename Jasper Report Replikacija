@@ -1,0 +1,46 @@
+#Jasper Report Backup Scrips
+#All $PATHs in script need to be adapted to the users specifications
+#Prequisites:
+#Create a script under Jasper user for permissions
+#Create a file without any permissions (chmod 400) for safekeeping of password 
+#Create a cronjob under Jasper user on every 2-3 days
+#Created by @nikola.scepo
+
+
+#!/bin/bash
+
+
+timestamp="$(date +'%d-%m-%y-%H-%M')"
+
+cd /home/jasper/jasperreports-server-cp-7.8.0/buildomatic
+
+#Export all Jasper Server reports
+
+./js-export.sh --output-zip /home/jasper/export/jasperserver-export-${timestamp}.zip --everything
+
+
+#Report of export
+
+if [ $? -eq 0 ]
+then
+    echo "[${timestamp}] Export Success. Export of jasperserver-export-${timestamp}.zip successful " >> /home/jasper/export/export-report.txt
+else
+    echo "[${timestamp}] Export Failure. Export of jasperserver-export-${timestamp}.zip failed " >> /home/jasper/export/export-report.txt
+fi
+
+#Rsync new file to backup server
+
+sshpass -p $(cat ~/.jspr.txt) rsync -a /home/jasper/export/jasperserver-export-${timestamp}.zip nikola@ip:/home/nikola
+
+#Report of backup
+
+if [ $? -eq 0 ]
+then
+    echo "[${timestamp}] Backup Success. Rsync to backup server successful. " >> /home/jasper/export/export-report.txt
+else
+    echo "[${timestamp}] Backup Failure. Rsync to backup server failed. " >> /home/jasper/export/export-report.txt
+fi
+
+#Remove all files older than 5 days
+
+find "/home/jasper/export/" -type f \( -name "*.zip" \) -mtime +5 -exec rm {} \;

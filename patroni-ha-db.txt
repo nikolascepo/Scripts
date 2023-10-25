@@ -1,0 +1,102 @@
+#Created by @nikolascepo
+#jasper automated replication
+
+#patroni db cluster replication
+#na svakom serveru ufw allow konfigurisati i upisati u /etc/hosts adekvatne hostove
+
+# 3 nodes 3 different severs/machnies
+
+
+----------node1------------
+
+sudo tee -a /etc/default/etcd <<EOF
+
+ETCD_NAME=node1
+ETCD_INITIAL_CLUSTER="node1=http://node1iphere:2380"
+ETCD_INITIAL_CLUSTER_TOKEN="your_token"
+ETCD_INITIAL_CLUSTER_STATE="new"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://node1iphere:2380"
+ETCD_DATA_DIR="/var/lib/etcd/postgresql"
+ETCD_LISTEN_PEER_URLS="http://node1iphere:2380"
+ETCD_LISTEN_CLIENT_URLS="http://node1iphere:2379,http://localhost:2379"
+ETCD_ADVERTISE_CLIENT_URLS="http://node1iphere:2379"
+
+EOF
+
+----------node2--------------
+
+sudo tee -a /etc/default/etcd <<EOF
+
+ETCD_NAME=node2
+ETCD_INITIAL_CLUSTER="node1=http://node1:2380,node2=http://node2iphere:2380"
+ETCD_INITIAL_CLUSTER_TOKEN="your_token"
+ETCD_INITIAL_CLUSTER_STATE="existing"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://node2iphere:2380"
+ETCD_DATA_DIR="/var/lib/etcd/postgresql"
+ETCD_LISTEN_PEER_URLS="http://node2iphere:2380"
+ETCD_LISTEN_CLIENT_URLS="http://node2iphere:2379,http://localhost:2379"
+ETCD_ADVERTISE_CLIENT_URLS="http://node2iphere:2379"
+
+EOF
+
+-----------node3-------------
+
+sudo tee -a /etc/default/etcd <<EOF
+
+ETCD_NAME=node3
+ETCD_INITIAL_CLUSTER="node1=http://node1iphere:2380,node2=http://node2iphere:2380", node3=http://node3iphere:2380"
+ETCD_INITIAL_CLUSTER_TOKEN="your_token"
+ETCD_INITIAL_CLUSTER_STATE="existing"
+ETCD_INITIAL_ADVERTISE_PEER_URLS="http://node3iphere:2380"
+ETCD_DATA_DIR="/var/lib/etcd/postgresql"
+ETCD_LISTEN_PEER_URLS="http://node3iphere:2380"
+ETCD_LISTEN_CLIENT_URLS="http://node3iphere:2379,http://localhost:2379"
+ETCD_ADVERTISE_CLIENT_URLS="http://node3iphere:2379"
+
+EOF
+
+#dodati clanove u primarni (node1)
+
+sudo etcdctl member add *ime* (node2) *full ip* (http://node2iphere:2380)
+
+
+
+sudo etcdctl member add node2 http://node2iphere:2380
+
+sudo etcdctl member add node3 http://node3iphere:2380
+
+
+
+
+sudo sh -c 'echo "softdog" >> /etc/modules'
+sudo sh -c 'echo "KERNEL==\"watchdog\", OWNER=\"postgres\", GROUP=\"postgres\"" >> /etc/udev/rules.d/61-watchdog.rules'
+
+sudo touch /etc/patroni.yml
+
+sudo mkdir /data/patroni
+
+sudo chown postgres:postgres /data/patroni
+
+sudo chmod 700 /data/patroni
+
+tee -a /etc/system.d/system/patroni.service <<EOF
+
+[Unit]
+Description=Runners to orchestrate a high-availability PostgreSQL
+After=syslog.target network.target
+
+[Service]
+Type=simple
+
+User=postgres
+Group=postgres
+
+ExecStart=/usr/local/bin/patroni /etc/patroni.yml
+KillMode=process
+TimeoutSec=30
+Restart=no
+
+[Install]
+WantedBy=multi-user.targ
+
+EOF

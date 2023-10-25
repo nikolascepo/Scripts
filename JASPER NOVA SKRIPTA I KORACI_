@@ -1,0 +1,20 @@
+#Created by @nikolascepo
+#JASPER replication steps
+
+#Ovo treba rucno uraditi na serveru odakle ce da se radi replikacija reportova (parent server) na ostale servere(child server)--
+
+keytool -genseckey -keystore ./key -storetype jceks -storepass yourpass -keyalg AES -keysize 128 -alias youralias -keypass youralias
+
+scp ./key username@ip:/path/jasperreports-server-cp-7.8.0/buildomatic
+
+#Ovo treba uraditi na svakom serveru
+
+./js-import.sh --input-key --keystore ./kljuc --storepass datadesign --keyalias  --keypass 
+
+#Ovo je komanda za export sa parent servera--
+
+./js-export.sh --everything --output-zip /home/jasper/report-ex.zip --keyalias  --keypass 
+
+#Ovo je import komanda na child serverima--
+
+./js-import.sh --keyalias --input-zip report-ex.zip 

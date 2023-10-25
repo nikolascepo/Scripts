@@ -1,0 +1,41 @@
+NRPE-server instalacija
+
+$ sudo apt install nagios-nrpe-server nagios-plugins -y
+
+$ curl -LO https://github.com/bucardo/check_postgres/releases/download/2.24.0/check_postgres-2.24.0.tar.gz
+
+$ tar xvf check_postgres-*.tar.gz
+
+$ sudo cp check_postgres-*/check_postgres.pl /usr/bin
+
+$ cd /usr/bin/
+
+$ sudo perl check_postgres.pl --symlinks
+
+$ sudo nano /etc/nagios/nrpe.cfg 
+
+allowed_hosts=...
+.
+.
+.
+command[check_users]=/usr/lib/nagios/plugins/check_users -w 5 -c 10
+command[check_load]=/usr/lib/nagios/plugins/check_load -r -w .45,.40,.35 -c .60,.55,.50
+command[check_hda1]=/usr/lib/nagios/plugins/check_disk -w 20% -c 10% -p /dev/sda2
+command[check_zombie_procs]=/usr/lib/nagios/plugins/check_procs -w 5 -c 10 -s Z
+command[check_total_procs]=/usr/lib/nagios/plugins/check_procs -w 2700 -c 3000
+
+command[check_postgres_locks]=/usr/bin/check_postgres_locks -w 2 -c 3 -H localhost -p 5432 --db --dbuser= --dbpass=
+command[check_postgres_bloat]=/usr/bin/check_postgres_bloat -w='15%' -c='20%' -H localhost -p 5432 --db  --dbuser= --dbpass=
+command[check_postgres_connection]=/usr/bin/check_postgres_connection -H localhost -p 5432 --db  --dbuser= --dbpass=
+command[check_postgres_backends]=/usr/bin/check_postgres_backends -w=200 -c=300 -H localhost -p 5432 --db  --dbuser= --dbpass=
+command[check_postgres_txntime]=/usr/bin/check_postgres_txn_time -w 10s -c 20s -H localhost -p 5432 --db  --dbuser= --dbpass=
+command[check_postgres_txnidle]=/usr/bin/check_postgres_txn_idle -w 10s -c 20s -H localhost -p 5432 --db  --dbuser= --dbpass=
+command[check_postgres_querytime]=/usr/bin/check_postgres_query_time -w='2 minutes' -c='3 minutes' -H localhost -p 5432 --db  --dbuser= --dbpass=
+command[check_postgres_autovacuum]=/usr/bin/check_postgres_last_autovacuum --critical=1d --warning=10h  -H localhost -p 5432 --db  --dbuser= --dbpass=
+#command[check_postgres_replication]=/usr/bin/check_postgres.pl -H localhost,62.138.185.176 -p 5432 --db  --dbuser= --dbpass=* --action=hot_standby_delay --warning=100000 --critical>
+#command[check_eth0]=/usr/bin/check_eth -i eth0 -w 10000K Bps -c 20000K Bps
+.
+.
+.
+
+$ sudo service nagios-nrpe-server start
